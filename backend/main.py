@@ -1,9 +1,3 @@
-
----
-# FastAPI backend for file upload   
-
-### `backend/main.py`
-'' python
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -17,6 +11,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/")
+async def root():
+    return {"message": "Backend de ACT funcionando!"}
 
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
