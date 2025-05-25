@@ -1,11 +1,10 @@
-import React from 'react';
-import UploadForm from './components/UploadForm';
+import ReplayUploader from './components/ReplayUploader';
 
 function App() {
   return (
     <div>
-      <h1>Assetto Telemetry Uploader</h1>
-      <UploadForm />
+      <h1>ACT – Visualizador de Replays</h1>
+      <ReplayUploader />
     </div>
   );
 }

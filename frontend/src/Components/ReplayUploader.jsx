@@ -1,31 +1,47 @@
-import React, { useState } from "react";
-import axios from "axios";
+import { useState } from "react";
 
 function ReplayUploader() {
   const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
     if (!file) return;
 
     const formData = new FormData();
     formData.append("file", file);
 
+    setLoading(true);
+    setResponse(null);
+
     try {
-      const res = await axios.post("http://127.0.0.1:8000/upload-replay/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const res = await fetch("http://localhost:8000/upload-replay/", {
+        method: "POST",
+        body: formData,
       });
-      setResponse(res.data);
-    } catch (err) {
-      console.error("Error al subir replay:", err);
+
+      const data = await res.json();
+      setResponse(data);
+    } catch (error) {
+      setResponse({ error: "Error al subir la replay" });
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
-      <input type="file" accept=".json,.txt,.lap" onChange={handleFileChange} />
+    <div style={{ padding: "1rem" }}>
+      <h2>Subir replay de Assetto Corsa</h2>
+      <input
+        type="file"
+        accept=".acReplay"
+        onChange={handleFileChange}
+        disabled={loading}
+      />
+      {loading && <p>Procesando replay...</p>}
       {response && (
-        <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+        <pre style={{ whiteSpace: "pre-wrap", marginTop: "1rem" }}>
           {JSON.stringify(response, null, 2)}
         </pre>
       )}
@@ -34,4 +50,3 @@ function ReplayUploader() {
 }
 
 export default ReplayUploader;
-

@@ -1,13 +1,17 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from parser.replay_parser import parse_replay  # Asegurate que esto existe
+import sys
+import os
+
+# Agregamos el path al parser
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "parser")))
+from replay_runner import run_replay_parser
 
 app = FastAPI()
 
-# CORS para permitir que el frontend acceda al backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Podés restringir a ["http://localhost:5173"]
+    allow_origins=["*"],  # o ["http://localhost:5173"] si preferís
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -19,7 +23,9 @@ def root():
 
 @app.post("/upload-replay/")
 async def upload_replay(file: UploadFile = File(...)):
-    contents = await file.read()
-    # Supongamos que parse_replay toma un string de texto plano y devuelve un diccionario
-    parsed_data = parse_replay(contents.decode("utf-8"))
-    return parsed_data
+    content = await file.read()
+    try:
+        data = run_replay_parser(content)
+        return data
+    except Exception as e:
+        return {"error": str(e)}
