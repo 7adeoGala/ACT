@@ -1,4 +1,4 @@
-# Assetto Telemetry Web
+# Assetto Corsa Telemetry Web
 
 Web app que permite subir archivos de telemetría de Assetto Corsa y obtener análisis o recomendaciones.
 
