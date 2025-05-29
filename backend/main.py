@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from parser.replay_runner import run_replay_parser  # ✅ Import directo
+from parser.replay_runner import run_replay_parser
 
 app = FastAPI()
 
@@ -19,10 +19,14 @@ def root():
 
 @app.post("/upload-replay/")
 async def upload_replay(file: UploadFile = File(...)):
+    print("📥 Archivo recibido:", file.filename)  # AGREGADO
+
     content = await file.read()
 
     try:
         data = run_replay_parser(content)
         return data
     except Exception as e:
+        print("❌ ERROR:", e)  # AGREGADO
         return {"error": str(e)}
+
