@@ -91,12 +91,14 @@ async def upload_replay(file: UploadFile = File(...)):
         ]
 
         return {
-            "resumen": data,
-            "trazado": trazado,
-            "rpm_marcha": leer_json("rpm_marcha.json"),
-            "gas_brake": leer_json("gas_brake.json"),
-            "fuel": leer_json("fuel.json"),
-            "laps": lapsWithDelta  # Incluir datos de vueltas con delta
+            "resumen": {
+                **data,
+                "trazado": trazado,
+                "rpm_marcha": leer_json("rpm_marcha.json"),
+                "gas_brake": leer_json("gas_brake.json"),
+                "fuel": leer_json("fuel.json"),
+                "laps": lapsWithDelta
+            }
         }
     except Exception as e:
         print("❌ ERROR:", e)

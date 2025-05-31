@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function TablaVueltas({ laps }) {
+function TablaVueltas({ laps }) {
   if (!laps || laps.length === 0) return <p>No hay datos de vueltas.</p>;
   return (
     <table style={{ borderCollapse: "collapse", marginBottom: 30 }}>
@@ -12,7 +12,7 @@ export default function TablaVueltas({ laps }) {
         </tr>
       </thead>
       <tbody>
-        {laps.map((lap) => (
+        {laps.filter((lap) => lap.lap_time > 0).map((lap) => (
           <tr
             key={lap.lap_number}
             style={
@@ -32,3 +32,7 @@ export default function TablaVueltas({ laps }) {
     </table>
   );
 }
+
+export default TablaVueltas;
+
+<TablaVueltas laps={resumen.laps.filter(lap => lap.lap_time > 0)} />

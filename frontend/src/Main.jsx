@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
-import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   LineElement,
@@ -9,9 +8,14 @@ import {
   Title,
   Tooltip,
   Legend,
+  CategoryScale,
 } from "chart.js";
+import GraficoTrazado from "./Components/GraficoTrazado";
+import GraficoRpmMarcha from "./Components/GraficoRpmMarcha";
+import GraficoGasBrake from "./Components/GraficoGasBrake";
+import GraficoFuel from "./Components/GraficoFuel";
 
-ChartJS.register(LineElement, PointElement, LinearScale, Title, Tooltip, Legend);
+ChartJS.register(LineElement, PointElement, LinearScale, Title, Tooltip, Legend, CategoryScale);
 
 function TablaVueltas({ laps }) {
   if (!laps || laps.length === 0) return <p>No hay datos de vueltas.</p>;
@@ -46,90 +50,12 @@ function TablaVueltas({ laps }) {
   );
 }
 
-function GraficoTrayectoria({ trazado }) {
-  const [lapSelected, setLapSelected] = useState(null);
-
-  if (!trazado || !trazado.x || !trazado.y || !trazado.currentLap) {
-    return <p>No hay datos de trazado.</p>;
-  }
-
-  const lapNumbers = Array.from(new Set(trazado.currentLap)).sort((a, b) => a - b);
-
-  // Genera datasets para cada vuelta
-  const datasets = lapNumbers.map((lap, idx) => {
-    const indices = trazado.currentLap
-      .map((l, i) => (lapSelected === null || l === lap ? i : null))
-      .filter((i) => i !== null);
-    return {
-      label: `Vuelta ${lap + 1}`,
-      data: indices.map((i) => ({ x: trazado.x[i], y: trazado.y[i] })),
-      borderColor: ["#c00", "#cc0", "#0c0", "#0cc", "#00c", "#c0c"][idx % 6],
-      fill: false,
-      pointRadius: 0,
-      borderWidth: 2,
-      hidden: lapSelected !== null && lapSelected !== lap,
-    };
-  });
-
-  return (
-    <div>
-      <div style={{ marginBottom: 10 }}>
-        <button
-          onClick={() => setLapSelected(null)}
-          style={{
-            fontWeight: lapSelected === null ? "bold" : "normal",
-            marginRight: 4,
-          }}
-        >
-          Todas
-        </button>
-        {lapNumbers.map((lap) => (
-          <button
-            key={lap}
-            onClick={() => setLapSelected(lap)}
-            style={{
-              fontWeight: lapSelected === lap ? "bold" : "normal",
-              marginRight: 4,
-            }}
-          >
-            Vuelta {lap + 1}
-          </button>
-        ))}
-      </div>
-      <div style={{ maxWidth: 700, minHeight: 400 }}>
-        <Line
-          data={{ datasets }}
-          options={{
-            responsive: true,
-            aspectRatio: 1,
-            maintainAspectRatio: true,
-            scales: {
-              x: { type: "linear", title: { display: true, text: "X" } },
-              y: { type: "linear", title: { display: true, text: "Y" } },
-            },
-            plugins: {
-              legend: { display: true, position: "right" },
-              title: { display: false },
-            },
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
 function App() {
   const [data, setData] = useState(null);
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  const handleUpload = async () => {
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
     if (!file) return;
-    setLoading(true);
     const formData = new FormData();
     formData.append("file", file);
     const res = await fetch("http://localhost:8000/upload-replay/", {
@@ -137,28 +63,39 @@ function App() {
       body: formData,
     });
     const json = await res.json();
+    console.log(json); // <-- Agregá esto
     setData(json);
-    setLoading(false);
   };
 
   return (
     <div style={{ padding: 30 }}>
       <h2>Subir Replay</h2>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload} disabled={loading || !file}>
-        {loading ? "Cargando..." : "Subir y analizar"}
-      </button>
+      <input type="file" onChange={handleUpload} />
 
       {data && (
         <>
           <h2>Resumen</h2>
           <pre style={{ background: "#f8f8f8", padding: 10 }}>
-            {JSON.stringify(data.resumen, null, 2)}
+            {JSON.stringify(
+              Object.fromEntries(
+                Object.entries(data.resumen).filter(
+                  ([k]) => !["trazado", "laps", "rpm_marcha", "gas_brake", "fuel"].includes(k)
+                )
+              ),
+              null,
+              2
+            )}
           </pre>
           <h2>Tiempos de vuelta</h2>
           <TablaVueltas laps={data.laps} />
-          <h2>Gráfico de Trayectoria 2D</h2>
-          <GraficoTrayectoria trazado={data.trazado} />
+          <h2>Trayectoria</h2>
+          <GraficoTrazado trazado={data.resumen.trazado} />
+          <h2>RPM / Marcha</h2>
+          <GraficoRpmMarcha data={data.resumen.rpm_marcha} />
+          <h2>Acelerador / Freno</h2>
+          <GraficoGasBrake data={data.resumen.gas_brake} />
+          <h2>Combustible</h2>
+          <GraficoFuel data={data.resumen.fuel} />
         </>
       )}
     </div>

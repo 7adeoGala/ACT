@@ -1,41 +1,45 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Line } from "react-chartjs-2";
 
-function GraficoFuel({ resumen }) {
-  const [fuel, setFuel] = useState(null);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!resumen) return;
-    fetch("/grafico/fuel")
-      .then((res) => {
-        if (!res.ok) throw new Error("No se pudo cargar el gráfico");
-        return res.json();
-      })
-      .then(setFuel)
-      .catch(() => setError("No hay datos de Combustible disponibles."));
-  }, [resumen]);
-
-  if (!resumen) return null;
-  if (error) return <p>{error}</p>;
-  if (!fuel || !fuel.fuel) return <p>No hay datos de Combustible.</p>;
-
-  const data = {
-    labels: fuel.fuel.map((_, i) => i),
-    datasets: [
-      {
-        label: "Combustible",
-        data: fuel.fuel,
-        borderColor: "orange",
-        pointRadius: 0,
-      },
-    ],
-  };
+function GraficoFuel({ data }) {
+  if (!data || !data.fuel) return <p>No hay datos de Combustible.</p>;
 
   return (
     <div>
       <h3>Gráfico de Combustible</h3>
-      <Line data={data} />
+      <div style={{ maxWidth: 700, minHeight: 400, background: "#fff", border: "1px solid #ccc", borderRadius: 8, padding: 8 }}>
+        <Line
+          data={{
+            labels: data.fuel.map((_, i) => i),
+            datasets: [
+              {
+                label: "Combustible",
+                data: data.fuel,
+                borderColor: "#cc0",
+                backgroundColor: "#fffaaf",
+                pointRadius: 0,
+                borderWidth: 2,
+              },
+            ],
+          }}
+          options={{
+            responsive: true,
+            scales: {
+              y: {
+                title: { display: true, text: "Litros" },
+                grid: { color: "#eee" },
+              },
+              x: {
+                title: { display: true, text: "Muestra" },
+                grid: { color: "#eee" },
+              },
+            },
+            plugins: {
+              legend: { display: true, position: "top" },
+            },
+          }}
+        />
+      </div>
     </div>
   );
 }
