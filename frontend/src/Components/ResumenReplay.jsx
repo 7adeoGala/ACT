@@ -1,19 +1,23 @@
 import React from "react";
 
-function ResumenReplay({ resumen }) {
-  if (!resumen) return null;
+const ocultar = [
+  "Frames", "Objetos en pista", "Cantidad de autos", "Pilotos", "Car Skin ID: 00_rosso"
+];
+
+export default function ResumenReplay({ resumen }) {
+  if (!resumen) return <div>NO HAY RESUMEN</div>;
   return (
-    <div>
-      <h2>Resumen del Replay</h2>
-      <ul>
-        {Object.entries(resumen).map(([key, value]) => (
-          <li key={key}>
-            <strong>{key}:</strong> {String(value)}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <table style={{ borderCollapse: "collapse", marginBottom: 30 }}>
+      <tbody>
+        {Object.entries(resumen)
+          .filter(([key]) => !ocultar.some(oc => key.includes(oc)))
+          .map(([key, value]) => (
+            <tr key={key}>
+              <td style={{ border: "1px solid #ccc", padding: 4, fontWeight: "bold" }}>{key}</td>
+              <td style={{ border: "1px solid #ccc", padding: 4 }}>{value}</td>
+            </tr>
+          ))}
+      </tbody>
+    </table>
   );
 }
-
-export default ResumenReplay;

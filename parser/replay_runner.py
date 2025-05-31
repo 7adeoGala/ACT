@@ -5,6 +5,7 @@ import shutil
 import json
 import glob
 import re
+import ast
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOLS_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "backend", "tools"))
@@ -72,6 +73,14 @@ def run_replay_parser(replay_bytes: bytes) -> dict:
             data = json.loads(raw)
         except json.JSONDecodeError as e:
             raise ValueError(f"JSON inválido: {e}\nPrimeros 500 caracteres:\n{raw[:500]}")
+
+    # Convierte strings tipo "[1,2,3]" a listas reales si es necesario
+    for key in ["x", "y", "z"]:
+        if key in data and isinstance(data[key], str):
+            try:
+                data[key] = ast.literal_eval(data[key])
+            except Exception:
+                data[key] = []
 
     # Combinar info del JSON y de la consola
     resultado = {
